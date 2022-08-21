@@ -25,8 +25,9 @@ class Density {
 	{ return number_of_samples_; }
 
   // saves to  file called name
-  void Save(std::string name);
+  void Save(std::string name) const;
 
+  void Reset();
  private:
 
   // range of the density
@@ -60,7 +61,12 @@ Density::Density(double xmin, double xmax, unsigned int number_of_bins, char xyz
   }
 }
 
-
+void Density::Reset()
+{
+  number_of_samples_ = 0;
+  number_of_excluded_samples_ = 0;
+  std::fill(density_.begin(), density_.end(), 0.0);
+}
 
 void Density::Sample(const std::vector<Vec3>& positions)
 {
@@ -100,7 +106,7 @@ std::vector<double> Density::GetDensity() const
   return rho;
 }
 
-void Density::Save(std::string name)
+void Density::Save(std::string name) const
 {
   std::ofstream out;
   out.open(name);
