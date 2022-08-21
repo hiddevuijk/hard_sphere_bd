@@ -231,11 +231,17 @@ template <class Potential>
 void SystemBD<Potential>::MakeTimeStep(double dt)
 {
   UpdateForces();
-
+  double sqrt_2_dt = sqrt(2 * dt);
   for (unsigned int i = 0; i < number_of_particles_; ++i) {
     positions_[i] += forces_[i] * dt;
+
     // add Brownian displacement
-    //positions_[i].x += 
+    positions_[i].x += sqrt_2_dt *
+                random_normal_distribution_(random_number_generator_);
+    positions_[i].y += sqrt_2_dt *
+                random_normal_distribution_(random_number_generator_);
+    positions_[i].z += sqrt_2_dt *
+                random_normal_distribution_(random_number_generator_);
   }
 
   time_ += dt;
