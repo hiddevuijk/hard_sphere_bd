@@ -64,6 +64,7 @@ class SystemBD {
 		{ return number_of_verlet_list_updates_; }
 
   void ResetTime() { time_ = 0; }
+  double GetTime() const { return time_;}
 
  private:
   const boost::random::uniform_int_distribution<int>
@@ -237,11 +238,11 @@ void SystemBD<Potential>::MakeTimeStep(double dt)
 
     // add Brownian displacement
     positions_[i].x += sqrt_2_dt *
-                random_normal_distribution_(random_number_generator_);
+                random_normal_distribution_();
     positions_[i].y += sqrt_2_dt *
-                random_normal_distribution_(random_number_generator_);
+                random_normal_distribution_();
     positions_[i].z += sqrt_2_dt *
-                random_normal_distribution_(random_number_generator_);
+                random_normal_distribution_();
   }
 
   time_ += dt;
