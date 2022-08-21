@@ -1,0 +1,19 @@
+seed = 123456785
+number_of_particles = 5000
+system_size_xy = 50
+dt = 2e-4
+verlet_list_radius = 6.0
+
+A1 = 1.5
+A2 = 1.1
+
+energy_scale = 10.0;
+exponent = 12.0;
+cut_off_radius = 1.1;
+
+zlim = 10.0
+number_of_bins = 200
+
+equilibration_time = 10.0
+time_between_samples = 0.5
+number_of_samples = 2

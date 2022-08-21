@@ -12,13 +12,14 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <algorithm>
 #include <cmath>
+#include <string>
 #include <boost/random.hpp>
 
 #include "vec3.h"
-#include <string>
 
-namespace system_helper {
+namespace systemBD_helper {
 
 double distance_squared(Vec3 r1, Vec3 r2, double L)
 {
@@ -157,7 +158,7 @@ SystemBD<Potential>::SystemBD(
   max_diff_ = (verlet_list_radius - potential.GetCutOffRadius()) / 2;
 
   RandomInit();
-  UpdateVerletList();
+  //UpdateVerletList();
 }
 
 template<class Potential>
@@ -168,7 +169,7 @@ void SystemBD<Potential>::RandomInit()
 
   double dx = 1.25;
   double dy = dx;
-  double dz = 1.0;
+  double dz = 1.1;
   int n_per_xy = floor(system_size_xy_ / dx);
 
   Vec3 temp;
@@ -232,9 +233,18 @@ template <class Potential>
 void SystemBD<Potential>::MakeTimeStep(double dt)
 {
   UpdateForces();
+
+  //double lf = 0;
+  //for (unsigned int i=0; i < number_of_particles_; ++i) {
+    //if ( lf < forces_[i].Length()) lf = forces_[i].Length();
+  //}
+  //std::cout << lf << std::endl;
+
   double sqrt_2_dt = sqrt(2 * dt);
+  bool update_verlet_list = false;
   for (unsigned int i = 0; i < number_of_particles_; ++i) {
-    positions_[i] += (forces_[i] - positions_[i].z * A_) * dt;
+    positions_[i].z -= 2.0 * positions_[i].z * A_ * dt;
+    positions_[i]   += forces_[i] * dt;
 
     // add Brownian displacement
     positions_[i].x += sqrt_2_dt *
@@ -243,9 +253,15 @@ void SystemBD<Potential>::MakeTimeStep(double dt)
                 random_normal_distribution_();
     positions_[i].z += sqrt_2_dt *
                 random_normal_distribution_();
+
+    double dist = systemBD_helper::distance_squared(positions_[i],
+                  positions_at_last_update_[i], system_size_xy_);
+    if (dist > max_diff_ * max_diff_) update_verlet_list = true;
   }
 
   time_ += dt;
+  if (update_verlet_list) UpdateVerletList();
+  
 }
 
 template <class Potential>
@@ -260,8 +276,8 @@ void SystemBD<Potential>::UpdateForces()
     for (unsigned int nj = 0; nj < number_of_neighbors_[i]; ++nj) {
       unsigned int j = verlet_list_[i][nj]; // neighbor index
       force_ij = potential_.Force(positions_[i], positions_[j]);
-      forces_[i] += force_ij;
-      forces_[j] -= force_ij;
+      forces_[i] -= force_ij;
+      forces_[j] += force_ij;
     }
   }
 }
@@ -292,8 +308,8 @@ void SystemBD<Potential>::UpdateVerletList()
   for (unsigned int i = 0; i < number_of_particles_; ++i) {
     positions_at_last_update_[i] = positions_[i];
     for (unsigned int j = i + 1; j < number_of_particles_; ++j) {
-      if (system_helper::distance_squared(positions_[i],
-				  positions_[j], system_size_xy_)
+      if (systemBD_helper::distance_squared(positions_[i],
+				                    positions_[j], system_size_xy_)
 			< verlet_list_radius_ * verlet_list_radius_ ) {
         verlet_list_[i][ number_of_neighbors_[i] ] = j;
         ++number_of_neighbors_[i];
