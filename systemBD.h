@@ -66,10 +66,13 @@ class SystemBD {
   void ResetTime() { time_ = 0; }
 
  private:
-    const boost::random::uniform_int_distribution<int>
+  const boost::random::uniform_int_distribution<int>
                                        random_int_distribution_;
+  const boost::normal_distribution<double> normal_distribution_;
 
-	boost::mt19937 random_number_generator_;
+  boost::mt19937 random_number_generator_;
+  boost::variate_generator<boost::mt19937&,
+        boost::normal_distribution<double> > random_normal_distribution_;
 
 	// initialize the particles on a square lattice
 	void RandomInit();
@@ -130,7 +133,10 @@ SystemBD<Potential>::SystemBD(
 	double A,
     Potential potential)
   : random_int_distribution_(0, number_of_particles - 1),
+    normal_distribution_(0.0,1.0),
 	random_number_generator_(seed),
+    random_normal_distribution_(random_number_generator_,
+                                normal_distribution_),
 	number_of_particles_(number_of_particles),
 	system_size_xy_(system_size_xy),
 	dt_(dt),
