@@ -234,7 +234,7 @@ void SystemBD<Potential>::MakeTimeStep(double dt)
   UpdateForces();
   double sqrt_2_dt = sqrt(2 * dt);
   for (unsigned int i = 0; i < number_of_particles_; ++i) {
-    positions_[i] += forces_[i] * dt;
+    positions_[i] += (forces_[i] - positions_[i].z * A_) * dt;
 
     // add Brownian displacement
     positions_[i].x += sqrt_2_dt *
