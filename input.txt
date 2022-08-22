@@ -1,4 +1,4 @@
-seed = 123456785
+seed = 123456786
 number_of_particles = 5000
 system_size_xy = 50
 dt = 2e-4
