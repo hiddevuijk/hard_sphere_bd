@@ -15,18 +15,26 @@ using namespace std;
 class Potential {
  public:
   Potential(double energy_scale, double exponent, double cut_off_radius,
-            double system_size_x, double system_size_y)
+            double system_size_x, double system_size_y,
+            double system_size_z)
   : energy_scale_(energy_scale), exponent_(exponent),
     cut_off_radius_(cut_off_radius), system_size_x_(system_size_x),
-    system_size_y_(system_size_y)
+    system_size_y_(system_size_y), system_size_z_(system_size_z)
   {}
 
   Vec3 Force(const Vec3& r1, const Vec3& r2) const
   {
     Vec3 dr = r2 - r1;
-    // apply p.b.c in x and y direction
-    dr.x -= system_size_x_ * round(dr.x / system_size_x_);
-    dr.y -= system_size_y_ * round(dr.y / system_size_y_);
+	if (system_size_x_ > 0) {
+      dr.x -= system_size_x_ * round(dr.x / system_size_x_);
+	}
+    if (system_size_y_ > 0) {
+      dr.y -= system_size_y_ * round(dr.y / system_size_y_);
+    }
+    if (system_size_z_ > 0) {
+      dr.z -= system_size_z_ * round(dr.z / system_size_z_);
+    }
+
     double dr_length = dr.Length();
     if ( dr_length < cut_off_radius_ ) {
 
@@ -48,6 +56,7 @@ class Potential {
   double cut_off_radius_;
   double system_size_x_;
   double system_size_y_;
+  double system_size_z_;
 };
 
 int main()
@@ -60,8 +69,12 @@ int main()
   unsigned int number_of_particles =
 		params.get_parameter<unsigned int>("number_of_particles");
 
-  double system_size_xy =
-		params.get_parameter<double>("system_size_xy");
+  double system_size_x =
+		params.get_parameter<double>("system_size_x");
+  double system_size_y =
+		params.get_parameter<double>("system_size_y");
+  double system_size_z =
+		params.get_parameter<double>("system_size_z");
 
   double dt = params.get_parameter<double>("dt");
 
@@ -86,16 +99,15 @@ int main()
   double energy_scale = params.get_parameter<double>("energy_scale");
   double exponent = params.get_parameter<double>("exponent");
   double cut_off_radius = params.get_parameter<double>("cut_off_radius");
-  double system_size_x = system_size_xy;
-  double system_size_y = system_size_xy;
 
   Potential potential(energy_scale, exponent, cut_off_radius,
-            system_size_x, system_size_y);
+            system_size_x, system_size_y, system_size_z);
 
-  SystemBD<Potential> system(seed, number_of_particles, system_size_xy,
-					dt, verlet_list_radius, A1, potential);
+  SystemBD<Potential> system(seed, number_of_particles, system_size_x,
+					system_size_y, system_size_z, dt,
+					verlet_list_radius, A1, potential);
 
-  double area = system_size_xy * system_size_xy;
+  double area = system_size_x * system_size_y;
   Density rho_z(-zlim, zlim, number_of_bins, 'z', area);
 
   cout << "Start Equilibration\n" << flush;

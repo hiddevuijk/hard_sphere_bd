@@ -1,7 +1,6 @@
 /*
  To do:
 	- fix initialization
-    - add Verlet algorithm
     -- check GetPositions
 */
 
@@ -21,19 +20,24 @@
 
 namespace systemBD_helper {
 
-double distance_squared(Vec3 r1, Vec3 r2, double L)
+// calculate square distance between r1 and r2,
+// apply periodic boundaires if L > 0
+double distance_squared(Vec3 r1, Vec3 r2, double Lx, double Ly, double Lz)
 {
+     
 	r1 -= r2;
-	r1.x -= L * round(r1.x/L);
-	r1.y -= L * round(r1.y/L);
+    if (Lx > 0) r1.x -= Lx * round(r1.x/Lx);
+	if (Ly > 0) r1.y -= Ly * round(r1.y/Ly);
+	if (Lz > 0) r1.z -= Lz * round(r1.z/Lz);
 	return r1.LengthSquared();
 }
 
-double distance(Vec3 r1, Vec3 r2, double L)
+double distance(Vec3 r1, Vec3 r2, double Lx, double Ly, double Lz)
 {
 	r1 -= r2;
-	r1.x -= L * round(r1.x/L);
-	r1.y -= L * round(r1.y/L);
+    if (Lx > 0) r1.x -= Lx * round(r1.x/Lx);
+	if (Ly > 0) r1.y -= Ly * round(r1.y/Ly);
+	if (Lz > 0) r1.z -= Lz * round(r1.z/Lz);
 	return r1.Length();
 }
 
@@ -44,7 +48,9 @@ class SystemBD {
  public:
 	SystemBD(unsigned long int seed,
 		   unsigned int number_of_particles,
-		   double system_size_xy,
+		   double system_size_x,
+		   double system_size_y,
+		   double system_size_z,
 		   double dt,
 		   double verlet_list_radius,
 		   double A,
@@ -86,8 +92,11 @@ class SystemBD {
 	// private variable
 
 	unsigned int number_of_particles_;
-	// system size in the x and y direction
-	double system_size_xy_;
+
+	// system size in the x, y and z directions
+	double system_size_x_;
+	double system_size_y_;
+	double system_size_z_;
 	
     // time step size
     double dt_;
@@ -129,7 +138,9 @@ template <class Potential>
 SystemBD<Potential>::SystemBD(
 	unsigned long int seed,
 	unsigned int number_of_particles,
-	double system_size_xy,
+	double system_size_x,
+	double system_size_y,
+	double system_size_z,
     double dt,
 	double verlet_list_radius,
 	double A,
@@ -140,7 +151,9 @@ SystemBD<Potential>::SystemBD(
     random_normal_distribution_(random_number_generator_,
                                 normal_distribution_),
 	number_of_particles_(number_of_particles),
-	system_size_xy_(system_size_xy),
+	system_size_x_(system_size_x),
+	system_size_y_(system_size_y),
+	system_size_z_(system_size_z),
 	dt_(dt),
 	verlet_list_radius_(verlet_list_radius),
     positions_(number_of_particles_),
@@ -153,12 +166,11 @@ SystemBD<Potential>::SystemBD(
 	number_of_verlet_list_updates_(0),
     time_(0.0),
     forces_(number_of_particles_)
-	
 {
   max_diff_ = (verlet_list_radius - potential.GetCutOffRadius()) / 2;
 
   RandomInit();
-  //UpdateVerletList();
+  UpdateVerletList();
 }
 
 template<class Potential>
@@ -170,7 +182,7 @@ void SystemBD<Potential>::RandomInit()
   double dx = 1.25;
   double dy = dx;
   double dz = 1.1;
-  int n_per_xy = floor(system_size_xy_ / dx);
+  int n_per_xy = floor(system_size_x_ / dx);
 
   Vec3 temp;
   int iz = 0;
@@ -255,7 +267,8 @@ void SystemBD<Potential>::MakeTimeStep(double dt)
                 random_normal_distribution_();
 
     double dist = systemBD_helper::distance_squared(positions_[i],
-                  positions_at_last_update_[i], system_size_xy_);
+                  positions_at_last_update_[i], system_size_x_,
+                  system_size_y_, system_size_z_);
     if (dist > max_diff_ * max_diff_) update_verlet_list = true;
   }
 
@@ -309,7 +322,8 @@ void SystemBD<Potential>::UpdateVerletList()
     positions_at_last_update_[i] = positions_[i];
     for (unsigned int j = i + 1; j < number_of_particles_; ++j) {
       if (systemBD_helper::distance_squared(positions_[i],
-				                    positions_[j], system_size_xy_)
+				                    positions_[j], system_size_x_,
+                                    system_size_y_, system_size_z_)
 			< verlet_list_radius_ * verlet_list_radius_ ) {
         verlet_list_[i][ number_of_neighbors_[i] ] = j;
         ++number_of_neighbors_[i];
