@@ -52,6 +52,7 @@ class Potential {
 
 int main()
 {
+  cout << "Start Reading parameters\n" << flush;
   Config params("input.txt");
   unsigned long int seed =
 		params.get_parameter<unsigned long int>("seed");
@@ -97,14 +98,15 @@ int main()
   double area = system_size_xy * system_size_xy;
   Density rho_z(-zlim, zlim, number_of_bins, 'z', area);
 
+  cout << "Start Equilibration\n" << flush;
 
   double time = 0;
   while (time < equilibration_time) {
     system.Integrate(time_between_samples);
     time += time_between_samples;
-    cout << equilibration_time << '\t' << time << '\n';
+    cout << equilibration_time << '\t' << time << '\n' << flush;
   }
-  cout << "Equilibration done\n";
+  cout << "Equilibration done\n" << flush;
   system.SetPotential(A2);
   system.ResetTime();
 
@@ -118,6 +120,7 @@ int main()
   out_time.open("time.dat");
   out_time << 0 << '\t' << 0 << '\n';
 
+  cout << "Start Sampling\n" << flush;
   for (unsigned int isample = 1; isample < number_of_samples; ++isample) {
     system.Integrate(time_between_samples);
 
@@ -126,7 +129,7 @@ int main()
     rho_z.Save(density_name);
     rho_z.Reset();
 
-    cout << number_of_samples << '\t' << isample << endl;
+    cout << number_of_samples << '\t' << isample << endl << flush;
     out_time << isample << '\t' << system.GetTime() << '\n'; 
   } 
   out_time.close();
