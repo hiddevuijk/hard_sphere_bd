@@ -106,8 +106,8 @@ int main()
     time += time_between_samples;
     cout << equilibration_time << '\t' << time << '\n' << flush;
   }
-
-  system.SavePositions("equilibrium_positions.dat");
+  string positions_name = "equilibrium_positions.dat";
+  system.SavePositions(positions_name);
 
   cout << "Equilibration done\n" << flush;
   system.SetPotential(A2);
@@ -137,7 +137,8 @@ int main()
   } 
   out_time.close();
 
-  system.SavePositions("final_positions.dat");
+  positions_name = "final_positions.dat";
+  system.SavePositions(positions_name);
 
 	return 0;
 }
