@@ -2,6 +2,7 @@
  To do:
 	- fix initialization
     -- check GetPositions
+  -- increase read precision
 */
 
 
@@ -10,6 +11,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <iomanip>
 #include <vector>
 #include <algorithm>
 #include <cmath>
@@ -26,7 +28,7 @@ double distance_squared(Vec3 r1, Vec3 r2, double Lx, double Ly, double Lz)
 {
      
 	r1 -= r2;
-    if (Lx > 0) r1.x -= Lx * round(r1.x/Lx);
+  if (Lx > 0) r1.x -= Lx * round(r1.x/Lx);
 	if (Ly > 0) r1.y -= Ly * round(r1.y/Ly);
 	if (Lz > 0) r1.z -= Lz * round(r1.z/Lz);
 	return r1.LengthSquared();
@@ -35,7 +37,7 @@ double distance_squared(Vec3 r1, Vec3 r2, double Lx, double Ly, double Lz)
 double distance(Vec3 r1, Vec3 r2, double Lx, double Ly, double Lz)
 {
 	r1 -= r2;
-    if (Lx > 0) r1.x -= Lx * round(r1.x/Lx);
+  if (Lx > 0) r1.x -= Lx * round(r1.x/Lx);
 	if (Ly > 0) r1.y -= Ly * round(r1.y/Ly);
 	if (Lz > 0) r1.z -= Lz * round(r1.z/Lz);
 	return r1.Length();
@@ -60,7 +62,7 @@ class SystemBD {
   void Integrate(double delta_t);
 
   void SavePositions(std::string name) const;		    
-  // attempt an MC move
+  void ReadPositions(std::string name);
 
   void SetPotential(double newA) { A_ = newA; }
   double getPotential() const { return A_; }
@@ -87,7 +89,7 @@ class SystemBD {
 
 	void UpdateVerletList();
 
-    void UpdateForces();
+  void UpdateForces();
 
 	// private variable
 
@@ -141,7 +143,7 @@ SystemBD<Potential>::SystemBD(
 	double system_size_x,
 	double system_size_y,
 	double system_size_z,
-    double dt,
+  double dt,
 	double verlet_list_radius,
 	double A,
     Potential potential)
@@ -309,6 +311,32 @@ void SystemBD<Potential>::SavePositions(std::string name) const
 
 	out.close();
 }
+
+template <class Potential>
+void SystemBD<Potential>::ReadPositions(std::string name)
+{
+  std::ifstream in;
+  in.open(name);
+  std::string line_str;
+
+  positions_ = std::vector<Vec3>();
+  double x, y, z;
+  while (getline(in, line_str) ){ 
+    std::cout << line_str << std::endl;
+    std::stringstream ss(line_str);
+    ss >> x;
+    ss >> y;
+    ss >> z;
+    std::cout << x << '\t' << y << '\t' << z << '\n';
+    //positions_.push_back(Vec3(x, y, z));
+  }
+
+  number_of_particles_ = positions_.size();
+
+  in.close();
+}
+
+
 
 template <class Potential>
 void SystemBD<Potential>::UpdateVerletList()
