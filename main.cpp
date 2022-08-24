@@ -24,10 +24,11 @@ class Potential {
 
   Vec3 Force(const Vec3& r1, const Vec3& r2) const
   {
-    Vec3 dr = r2 - r1;
-	if (system_size_x_ > 0) {
+    Vec3 dr = r1 - r2;
+    // periodic boundary conditions if system_size_..._ > 0
+    if (system_size_x_ > 0) {
       dr.x -= system_size_x_ * round(dr.x / system_size_x_);
-	}
+    }
     if (system_size_y_ > 0) {
       dr.y -= system_size_y_ * round(dr.y / system_size_y_);
     }
@@ -37,13 +38,10 @@ class Potential {
 
     double dr_length = dr.Length();
     if ( dr_length < cut_off_radius_ ) {
-
       double f = pow(1 / dr_length, exponent_ + 2);
-	  f *=  energy_scale_ * exponent_ ;
-
-	  return dr * f;
-
-	} else {
+      f *=  energy_scale_ * exponent_ ;
+	    return dr * f;
+    } else {
       return dr * 0;
     }
   }

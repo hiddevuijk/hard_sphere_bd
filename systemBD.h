@@ -291,8 +291,8 @@ void SystemBD<Potential>::UpdateForces()
     for (unsigned int nj = 0; nj < number_of_neighbors_[i]; ++nj) {
       unsigned int j = verlet_list_[i][nj]; // neighbor index
       force_ij = potential_.Force(positions_[i], positions_[j]);
-      forces_[i] -= force_ij;
-      forces_[j] += force_ij;
+      forces_[i] += force_ij;
+      forces_[j] -= force_ij;
     }
   }
 }
