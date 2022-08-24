@@ -134,12 +134,14 @@ int main()
   out_time << 0 << '\t' << 0 << '\n';
 
   cout << "Start Sampling\n" << flush;
-  for (unsigned int isample = 1; isample < number_of_samples; ++isample) {
+  for (unsigned int isample = 1; isample < number_of_samples + 1; ++isample) {
     system.Integrate(time_between_samples);
 
     rho_z.Sample(system.GetPositions());
+
     string density_name = "rhoz" + to_string(isample) + ".dat";
     rho_z.Save(density_name);
+
     rho_z.Reset();
 
     cout << number_of_samples << '\t' << isample << endl << flush;
