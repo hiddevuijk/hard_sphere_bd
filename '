@@ -117,7 +117,7 @@ int main()
    
   cout << "Reading parameters Done\n" << flush;
   cout << "Start Reading positions\n" << flush;
-  //system.ReadPositions(start_positions_name);
+  system.ReadPositions(start_positions_name);
   cout << system.GetNumberOfParticles() << endl;
   cout << "Reading positions done\n" << flush;
   cout << "Start equilibrating\n" << flush;

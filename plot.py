@@ -2,27 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sys import exit
 
-rho = np.loadtxt("mc_rhoz1.5.dat")
-plt.scatter(rho[:,0], rho[:,1], label="Eq. A=1.5")
-dx = rho[1,0] - rho[0,0]
-norm = dx * sum(rho[:,1])
-print(norm)
-
-rho = np.loadtxt("mc_rhoz1.1.dat")
-plt.scatter(rho[:,0], rho[:,1], label="Eq. A=1.1")
-
-dx = rho[1,0] - rho[0,0]
-norm = dx * sum(rho[:,1])
-print(norm)
-
 time_list = np.loadtxt("time.dat")
 x = np.loadtxt("rhoz1.dat")[:,0]
 
-rho  = np.loadtxt("rho1.dat")[:,1]
-rho += np.loadtxt("rho2.dat")[:,1]
-rho += np.loadtxt("rho3.dat")[:,1]
-rho += np.loadtxt("rho4.dat")[:,1]
-rho += np.loadtxt("rho5.dat")[:,1]
+rho  = np.loadtxt("rhoz1.dat")[:,1]
+rho += np.loadtxt("rhoz2.dat")[:,1]
+rho += np.loadtxt("rhoz3.dat")[:,1]
+rho += np.loadtxt("rhoz4.dat")[:,1]
+rho += np.loadtxt("rhoz5.dat")[:,1]
 
 rho /= 5
 

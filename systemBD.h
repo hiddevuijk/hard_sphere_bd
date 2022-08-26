@@ -74,6 +74,7 @@ class SystemBD {
 
   void ResetTime() { time_ = 0; }
   double GetTime() const { return time_;}
+  long unsigned int GetNumberOfParticles() const { return number_of_particles_;}
 
  private:
   const boost::random::uniform_int_distribution<int>
@@ -322,13 +323,11 @@ void SystemBD<Potential>::ReadPositions(std::string name)
   positions_ = std::vector<Vec3>();
   double x, y, z;
   while (getline(in, line_str) ){ 
-    std::cout << line_str << std::endl;
     std::stringstream ss(line_str);
     ss >> x;
     ss >> y;
     ss >> z;
-    std::cout << x << '\t' << y << '\t' << z << '\n';
-    //positions_.push_back(Vec3(x, y, z));
+    positions_.push_back(Vec3(x, y, z));
   }
 
   number_of_particles_ = positions_.size();
