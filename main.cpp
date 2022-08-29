@@ -120,6 +120,8 @@ int main()
   system.SavePositions(positions_name);
 
   cout << "Equilibration done\n" << flush;
+
+  return 0;
   system.SetPotential(A2);
   system.ResetTime();
 

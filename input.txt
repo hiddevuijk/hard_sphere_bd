@@ -17,7 +17,7 @@ A2 = 1.1
 zlim = 10.0
 number_of_bins = 200
 
-equilibration_time = 0.02
+equilibration_time = 0.002
 time_between_samples = 0.01
 number_of_samples = 3
 
