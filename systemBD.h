@@ -62,7 +62,6 @@ class SystemBD {
   void Integrate(double delta_t);
 
   void SavePositions(std::string name) const;		    
-  void ReadPositions(std::string name);
 
   void SetPotential(double newA) { A_ = newA; }
   double getPotential() const { return A_; }
@@ -312,29 +311,6 @@ void SystemBD<Potential>::SavePositions(std::string name) const
 
 	out.close();
 }
-
-template <class Potential>
-void SystemBD<Potential>::ReadPositions(std::string name)
-{
-  std::ifstream in;
-  in.open(name);
-  std::string line_str;
-
-  positions_ = std::vector<Vec3>();
-  double x, y, z;
-  while (getline(in, line_str) ){ 
-    std::stringstream ss(line_str);
-    ss >> x;
-    ss >> y;
-    ss >> z;
-    positions_.push_back(Vec3(x, y, z));
-  }
-
-  number_of_particles_ = positions_.size();
-
-  in.close();
-}
-
 
 
 template <class Potential>
