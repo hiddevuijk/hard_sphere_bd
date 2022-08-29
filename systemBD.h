@@ -58,6 +58,17 @@ class SystemBD {
 		   double A,
            Potential potential);
 
+	SystemBD(unsigned long int seed,
+       std::vector<Vec3> positions,
+		   double system_size_x,
+		   double system_size_y,
+		   double system_size_z,
+		   double dt,
+		   double verlet_list_radius,
+		   double A,
+       Potential potential);
+
+
   void MakeTimeStep(double dt);
   void Integrate(double delta_t);
 
@@ -100,8 +111,8 @@ class SystemBD {
 	double system_size_y_;
 	double system_size_z_;
 	
-    // time step size
-    double dt_;
+  // time step size
+  double dt_;
 
 	// Radius of for the Verlet list
 	double verlet_list_radius_;
@@ -149,29 +160,66 @@ SystemBD<Potential>::SystemBD(
     Potential potential)
   : random_int_distribution_(0, number_of_particles - 1),
     normal_distribution_(0.0,1.0),
-	random_number_generator_(seed),
+  	random_number_generator_(seed),
     random_normal_distribution_(random_number_generator_,
                                 normal_distribution_),
-	number_of_particles_(number_of_particles),
-	system_size_x_(system_size_x),
-	system_size_y_(system_size_y),
-	system_size_z_(system_size_z),
-	dt_(dt),
-	verlet_list_radius_(verlet_list_radius),
+  	number_of_particles_(number_of_particles),
+	  system_size_x_(system_size_x),
+	  system_size_y_(system_size_y),
+	  system_size_z_(system_size_z),
+	  dt_(dt),
+	  verlet_list_radius_(verlet_list_radius),
     positions_(number_of_particles_),
     positions_at_last_update_(number_of_particles_),
-	verlet_list_(number_of_particles_,
+	  verlet_list_(number_of_particles_,
 				std::vector<unsigned int>(number_of_particles)),
-	number_of_neighbors_(number_of_particles_),
-	A_(A),
+	  number_of_neighbors_(number_of_particles_),
+	  A_(A),
     potential_(potential),
-	number_of_verlet_list_updates_(0),
+	  number_of_verlet_list_updates_(0),
     time_(0.0),
     forces_(number_of_particles_)
 {
   max_diff_ = (verlet_list_radius - potential.GetCutOffRadius()) / 2;
 
   RandomInit();
+  UpdateVerletList();
+}
+
+template <class Potential>
+SystemBD<Potential>::SystemBD(
+	unsigned long int seed,
+  std::vector<Vec3> positions,
+	double system_size_x,
+	double system_size_y,
+	double system_size_z,
+  double dt,
+	double verlet_list_radius,
+	double A,
+  Potential potential)
+  : random_int_distribution_(0, positions.size() - 1),
+    normal_distribution_(0.0,1.0),
+  	random_number_generator_(seed),
+    random_normal_distribution_(random_number_generator_,
+                                normal_distribution_),
+  	number_of_particles_(positions.size()),
+	  system_size_x_(system_size_x),
+	  system_size_y_(system_size_y),
+	  system_size_z_(system_size_z),
+	  dt_(dt),
+	  verlet_list_radius_(verlet_list_radius),
+    positions_(positions),
+    positions_at_last_update_(number_of_particles_),
+	  verlet_list_(number_of_particles_,
+				std::vector<unsigned int>(number_of_particles_)),
+	  number_of_neighbors_(number_of_particles_),
+	  A_(A),
+    potential_(potential),
+	  number_of_verlet_list_updates_(0),
+    time_(0.0),
+    forces_(number_of_particles_)
+{
+  max_diff_ = (verlet_list_radius - potential.GetCutOffRadius()) / 2;
   UpdateVerletList();
 }
 
@@ -311,6 +359,9 @@ void SystemBD<Potential>::SavePositions(std::string name) const
 
 	out.close();
 }
+
+
+
 
 
 template <class Potential>

@@ -1,6 +1,5 @@
 TARGET = test.exe
-#OBJS = main.o
-OBJS = main_read.o
+OBJS = main.o
 CC = g++
 #CFLAGS = -c -Wall -g -std=c++11
 #LFLAGS = -Wall -g
@@ -10,11 +9,8 @@ LFLAGS = -Wall -O3 -DNDEBUG
 $(TARGET): $(OBJS)
 	$(CC) $(LFLAGS) $(OBJS) -o $(TARGET)
 
-#main.o: main.cpp vec3.h config_file.h systemBD.h density.h
-#	$(CC) $(CFLAGS) main.cpp
-
-main_read.o: main_read.cpp vec3.h config_file.h systemBD.h density.h
-	$(CC) $(CFLAGS) main_read.cpp
+main.o: main.cpp vec3.h config_file.h systemBD.h density.h
+	$(CC) $(CFLAGS) main.cpp
 
 
 .PHONY: clean

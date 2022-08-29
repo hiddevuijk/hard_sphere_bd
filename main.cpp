@@ -12,6 +12,7 @@
 
 using namespace std;
 
+
 class Potential {
  public:
   Potential(double energy_scale, double exponent, double cut_off_radius,
@@ -57,6 +58,28 @@ class Potential {
   double system_size_z_;
 };
 
+vector<Vec3> ReadPositions(string data_name)
+{
+  vector<Vec3> positions;
+
+  std::ifstream in;
+  in.open(data_name);
+
+  string line;
+
+  double x,y,z;
+  while (getline(in, line)) {
+    std::stringstream ss(line);
+    ss >> x;
+    ss >> y;
+    ss >> z;
+    positions.push_back(Vec3(x, y, z));
+  }
+
+  return positions;
+}
+
+
 int main()
 {
   cout << "Start Reading parameters\n" << flush;
@@ -64,8 +87,8 @@ int main()
   unsigned long int seed =
 		params.get_parameter<unsigned long int>("seed");
 
-  unsigned int number_of_particles =
-		params.get_parameter<unsigned int>("number_of_particles");
+  //unsigned int number_of_particles =
+  //	params.get_parameter<unsigned int>("number_of_particles");
 
   double system_size_x =
 		params.get_parameter<double>("system_size_x");
@@ -101,9 +124,16 @@ int main()
   Potential potential(energy_scale, exponent, cut_off_radius,
             system_size_x, system_size_y, system_size_z);
 
-  SystemBD<Potential> system(seed, number_of_particles, system_size_x,
+
+  vector<Vec3> initial_positions = ReadPositions("eqpos.dat");
+
+  SystemBD<Potential> system(seed, initial_positions, system_size_x,
 					system_size_y, system_size_z, dt,
 					verlet_list_radius, A1, potential);
+
+  //SystemBD<Potential> system(seed, number_of_particles, system_size_x,
+	//				system_size_y, system_size_z, dt,
+	//				verlet_list_radius, A1, potential);
 
   double area = system_size_x * system_size_y;
   Density rho_z(-zlim, zlim, number_of_bins, 'z', area);
@@ -121,7 +151,6 @@ int main()
 
   cout << "Equilibration done\n" << flush;
 
-  return 0;
   system.SetPotential(A2);
   system.ResetTime();
 
