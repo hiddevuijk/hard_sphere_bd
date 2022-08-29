@@ -79,6 +79,16 @@ vector<Vec3> ReadPositions(string data_name)
   return positions;
 }
 
+double AverageDistanceMoved(const vector<Vec3>& p1, const vector<Vec3>& p2, double Lx)
+{
+   double distance = 0;
+   for (unsigned int i = 0; i < p1.size(); ++i) {
+      Vec3 dr = p1[i] - p2[i];
+      distance += dr.Length();
+   }
+   return distance / p1.size();
+}
+
 
 int main()
 {
@@ -117,6 +127,9 @@ int main()
   unsigned int number_of_samples = 
          params.get_parameter<unsigned int>("number_of_samples");
 
+  //unsigned int number_of_particles = 
+  //     params.get_parameter<unsigned int>("number_of_particles");
+
   double energy_scale = params.get_parameter<double>("energy_scale");
   double exponent = params.get_parameter<double>("exponent");
   double cut_off_radius = params.get_parameter<double>("cut_off_radius");
@@ -148,6 +161,12 @@ int main()
   }
   string positions_name = "equilibrium_positions.dat";
   system.SavePositions(positions_name);
+
+  vector<Vec3> eq_positions = system.GetPositions();
+  cout << "Average Distance between init and eq:"
+       << AverageDistanceMoved(initial_positions, eq_positions, system_size_x)
+       << endl;
+
 
   cout << "Equilibration done\n" << flush;
 
@@ -183,5 +202,5 @@ int main()
   positions_name = "final_positions.dat";
   system.SavePositions(positions_name);
 
-	return 0;
+  	return 0;
 }
