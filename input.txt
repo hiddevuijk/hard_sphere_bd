@@ -1,5 +1,6 @@
 
-start_positions_name = start_positions.dat
+
+start_positions_name = 
 
 seed = 123456789
 number_of_particles = 5000
@@ -7,19 +8,19 @@ system_size_x = 50.0
 system_size_y = 50.0
 system_size_z = -1
 
-dt = 1e-4
+dt = 1e-5
 
 verlet_list_radius = 1.5
 
-A1 = 1.5
-A2 = 1.1
+A = 1.5
+Ae = 1.1
 
 zlim = 10.0
 number_of_bins = 200
 
-equilibration_time = 0.002
-time_between_samples = 0.01
-number_of_samples = 3
+equilibration_time = 0.005
+time_between_samples = 0.001
+number_of_samples = 5
 
 energy_scale = 1.0
 exponent = 36.0

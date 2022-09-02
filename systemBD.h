@@ -49,7 +49,6 @@ template <class Potential>
 class SystemBD {
  public:
 	SystemBD(unsigned long int seed,
-		   unsigned int number_of_particles,
 		   double system_size_x,
 		   double system_size_y,
 		   double system_size_z,
@@ -58,16 +57,7 @@ class SystemBD {
 		   double A,
            Potential potential);
 
-	SystemBD(unsigned long int seed,
-       std::vector<Vec3> positions,
-		   double system_size_x,
-		   double system_size_y,
-		   double system_size_z,
-		   double dt,
-		   double verlet_list_radius,
-		   double A,
-       Potential potential);
-
+  void SetPositions(const std::vector<Vec3>& positions);
 
   void MakeTimeStep(double dt);
   void Integrate(double delta_t);
@@ -75,7 +65,9 @@ class SystemBD {
   void SavePositions(std::string name) const;		    
 
   void SetPotential(double newA) { A_ = newA; }
-  double getPotential() const { return A_; }
+  double GetPotential() const { return A_; }
+  void SetPotentialExp(double newAexp) { Aexp_ = newAexp; }
+  double GetPotentialExp() const { return Aexp_; }
 
   std::vector<Vec3> GetPositions() const { return positions_; }
 
@@ -86,17 +78,16 @@ class SystemBD {
   double GetTime() const { return time_;}
   long unsigned int GetNumberOfParticles() const { return number_of_particles_;}
 
+	// initialize the particles on a square lattice
+	void RandomInit(unsigned int number_of_particles);
+
  private:
-  const boost::random::uniform_int_distribution<int>
-                                       random_int_distribution_;
   const boost::normal_distribution<double> normal_distribution_;
 
   boost::mt19937 random_number_generator_;
   boost::variate_generator<boost::mt19937&,
         boost::normal_distribution<double> > random_normal_distribution_;
 
-	// initialize the particles on a square lattice
-	void RandomInit();
 
 	void UpdateVerletList();
 
@@ -133,6 +124,8 @@ class SystemBD {
 
 	// externale potential: U(z) = A_ * z * z
 	double A_;
+	// externale potential: U(z) = Aexp_ exp( - 5 * z * z)
+	double Aexp_;
 
     // potential
     Potential potential_;
@@ -150,7 +143,6 @@ class SystemBD {
 template <class Potential>
 SystemBD<Potential>::SystemBD(
 	unsigned long int seed,
-	unsigned int number_of_particles,
 	double system_size_x,
 	double system_size_y,
 	double system_size_z,
@@ -158,74 +150,53 @@ SystemBD<Potential>::SystemBD(
 	double verlet_list_radius,
 	double A,
     Potential potential)
-  : random_int_distribution_(0, number_of_particles - 1),
-    normal_distribution_(0.0,1.0),
+  : normal_distribution_(0.0,1.0),
   	random_number_generator_(seed),
     random_normal_distribution_(random_number_generator_,
                                 normal_distribution_),
-  	number_of_particles_(number_of_particles),
 	  system_size_x_(system_size_x),
 	  system_size_y_(system_size_y),
 	  system_size_z_(system_size_z),
 	  dt_(dt),
 	  verlet_list_radius_(verlet_list_radius),
-    positions_(number_of_particles_),
-    positions_at_last_update_(number_of_particles_),
-	  verlet_list_(number_of_particles_,
-				std::vector<unsigned int>(number_of_particles)),
-	  number_of_neighbors_(number_of_particles_),
 	  A_(A),
+	  Aexp_(0.0),
     potential_(potential),
 	  number_of_verlet_list_updates_(0),
-    time_(0.0),
-    forces_(number_of_particles_)
+    time_(0.0)
 {
   max_diff_ = (verlet_list_radius - potential.GetCutOffRadius()) / 2;
-
-  RandomInit();
-  UpdateVerletList();
 }
-
 template <class Potential>
-SystemBD<Potential>::SystemBD(
-	unsigned long int seed,
-  std::vector<Vec3> positions,
-	double system_size_x,
-	double system_size_y,
-	double system_size_z,
-  double dt,
-	double verlet_list_radius,
-	double A,
-  Potential potential)
-  : random_int_distribution_(0, positions.size() - 1),
-    normal_distribution_(0.0,1.0),
-  	random_number_generator_(seed),
-    random_normal_distribution_(random_number_generator_,
-                                normal_distribution_),
-  	number_of_particles_(positions.size()),
-	  system_size_x_(system_size_x),
-	  system_size_y_(system_size_y),
-	  system_size_z_(system_size_z),
-	  dt_(dt),
-	  verlet_list_radius_(verlet_list_radius),
-    positions_(positions),
-    positions_at_last_update_(number_of_particles_),
-	  verlet_list_(number_of_particles_,
-				std::vector<unsigned int>(number_of_particles_)),
-	  number_of_neighbors_(number_of_particles_),
-	  A_(A),
-    potential_(potential),
-	  number_of_verlet_list_updates_(0),
-    time_(0.0),
-    forces_(number_of_particles_)
+void SystemBD<Potential>::SetPositions(const std::vector<Vec3>& positions)
 {
-  max_diff_ = (verlet_list_radius - potential.GetCutOffRadius()) / 2;
+  number_of_particles_ = positions.size();
+  positions_ = positions;
+  positions_at_last_update_ = std::vector<Vec3>(number_of_particles_);
+  verlet_list_ = std::vector<std::vector<unsigned int> >(number_of_particles_,
+                 std::vector<unsigned int>(number_of_particles_));
+  number_of_neighbors_ = std::vector<unsigned int>(number_of_particles_);
+  forces_ = std::vector<Vec3>(number_of_particles_);
+
   UpdateVerletList();
+
 }
 
 template<class Potential>
-void SystemBD<Potential>::RandomInit()
+void SystemBD<Potential>::RandomInit(unsigned int number_of_particles)
 {
+  number_of_particles_ = number_of_particles;
+
+  positions_ = std::vector<Vec3>(number_of_particles_);
+  positions_at_last_update_ = std::vector<Vec3>(number_of_particles_);
+  verlet_list_ = std::vector<std::vector<unsigned int> >(number_of_particles_,
+                 std::vector<unsigned int>(number_of_particles_));
+  number_of_neighbors_ = std::vector<unsigned int>(number_of_particles_);
+  forces_ = std::vector<Vec3>(number_of_particles_);
+
+  UpdateVerletList();
+
+
 
   std::vector<Vec3> lattice_positions;
 
@@ -269,9 +240,13 @@ void SystemBD<Potential>::RandomInit()
   }
   // shuffle positions
 
+  // random int distribution
+  boost::random::uniform_int_distribution<int>
+         random_int_distribution_(0, number_of_particles_ - 1);
+
   for (unsigned int i = 0; i < lattice_positions.size(); ++i) {
     unsigned int j = random_int_distribution_(random_number_generator_);
-	temp = lattice_positions[i];
+	  temp = lattice_positions[i];
     lattice_positions[i] = lattice_positions[j];
     lattice_positions[j] = temp;
   }
@@ -279,6 +254,9 @@ void SystemBD<Potential>::RandomInit()
   for (unsigned int i = 0; i < number_of_particles_; ++i){
     positions_[i] = lattice_positions[i];
   }
+
+
+  UpdateVerletList();
 }
 
 template <class Potential>

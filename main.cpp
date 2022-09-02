@@ -97,9 +97,6 @@ int main()
   unsigned long int seed =
 		params.get_parameter<unsigned long int>("seed");
 
-  //unsigned int number_of_particles =
-  //	params.get_parameter<unsigned int>("number_of_particles");
-
   double system_size_x =
 		params.get_parameter<double>("system_size_x");
   double system_size_y =
@@ -112,8 +109,8 @@ int main()
   double verlet_list_radius =
 		params.get_parameter<double>("verlet_list_radius");
 
-  double A1 = params.get_parameter<double>("A1");
-  double A2 = params.get_parameter<double>("A2");
+  double A  = params.get_parameter<double>("A");
+  double Ae = params.get_parameter<double>("Ae");
 
 
   double zlim = params.get_parameter<double>("zlim");
@@ -127,8 +124,6 @@ int main()
   unsigned int number_of_samples = 
          params.get_parameter<unsigned int>("number_of_samples");
 
-  //unsigned int number_of_particles = 
-  //     params.get_parameter<unsigned int>("number_of_particles");
 
   double energy_scale = params.get_parameter<double>("energy_scale");
   double exponent = params.get_parameter<double>("exponent");
@@ -136,17 +131,26 @@ int main()
 
   Potential potential(energy_scale, exponent, cut_off_radius,
             system_size_x, system_size_y, system_size_z);
+  SystemBD<Potential> system(seed, system_size_x, system_size_y, system_size_z,
+                             dt, verlet_list_radius, A, potential);
+  string start_positions_name =
+         params.get_parameter<string>("start_positions_name");
 
+  if (start_positions_name.empty()) {
+    // start from random initial positions
+    cout << "Randomly initializing positions\n" << flush;
+    unsigned int number_of_particles = 
+                 params.get_parameter<unsigned int>("number_of_particles");
+    system.RandomInit(number_of_particles);  
+  } else {
+    // start from positions in file "start_positions_name"
+    cout << "Reading positions from " << start_positions_name << endl << flush;
+    vector<Vec3> initial_positions = ReadPositions(start_positions_name);
+    system.SetPositions(initial_positions);
+  }
+  cout << "Positions Initialized \n" << flush; 
 
-  vector<Vec3> initial_positions = ReadPositions("eqpos.dat");
-
-  SystemBD<Potential> system(seed, initial_positions, system_size_x,
-					system_size_y, system_size_z, dt,
-					verlet_list_radius, A1, potential);
-
-  //SystemBD<Potential> system(seed, number_of_particles, system_size_x,
-	//				system_size_y, system_size_z, dt,
-	//				verlet_list_radius, A1, potential);
+  system.SetPotentialExp(0);  
 
   double area = system_size_x * system_size_y;
   Density rho_z(-zlim, zlim, number_of_bins, 'z', area);
@@ -162,15 +166,10 @@ int main()
   string positions_name = "equilibrium_positions.dat";
   system.SavePositions(positions_name);
 
-  vector<Vec3> eq_positions = system.GetPositions();
-  cout << "Average Distance between init and eq:"
-       << AverageDistanceMoved(initial_positions, eq_positions, system_size_x)
-       << endl;
-
 
   cout << "Equilibration done\n" << flush;
 
-  system.SetPotential(A2);
+  system.SetPotentialExp(Ae);
   system.ResetTime();
 
   rho_z.Sample(system.GetPositions());
