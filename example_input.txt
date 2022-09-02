@@ -1,0 +1,28 @@
+start_positions_name = eqpos.dat
+
+seed = 123456789
+number_of_particles = 5000
+system_size_x = 50.0
+system_size_y = 50.0
+system_size_z = -1
+
+dt = 1e-5
+
+verlet_list_radius = 1.5
+
+A = 1.5
+Ae = 5.0
+
+zlim = 10.0
+number_of_bins = 200
+
+equilibration_time = 0.01
+time_between_samples = 0.001
+number_of_samples = 10
+
+energy_scale = 1.0
+exponent = 36.0
+cut_off_radius = 1.00
+
+
+
