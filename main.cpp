@@ -76,6 +76,7 @@ vector<Vec3> ReadPositions(string data_name)
     positions.push_back(Vec3(x, y, z));
   }
 
+  in.close();
   return positions;
 }
 
