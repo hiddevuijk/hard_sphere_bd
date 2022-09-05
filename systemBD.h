@@ -283,7 +283,13 @@ void SystemBD<Potential>::MakeTimeStep(double dt)
   double sqrt_2_dt = sqrt(2 * dt);
   bool update_verlet_list = false;
   for (unsigned int i = 0; i < number_of_particles_; ++i) {
-    positions_[i].z -= 2.0 * positions_[i].z * A_ * dt;
+    double z = positions_[i].z;
+
+    // harmonic potential
+    positions_[i].z -= 2.0 * z * A_ * dt;
+    // exponential potential
+    positions_[i].z -= 10.0 * z * Aexp_ * std::exp(- 5 * z * z);
+
     positions_[i]   += forces_[i] * dt;
 
     // add Brownian displacement
