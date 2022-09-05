@@ -288,7 +288,7 @@ void SystemBD<Potential>::MakeTimeStep(double dt)
     // harmonic potential
     positions_[i].z -= 2.0 * z * A_ * dt;
     // exponential potential
-    positions_[i].z -= 10.0 * z * Aexp_ * std::exp(- 5 * z * z);
+    positions_[i].z += 10.0 * z * Aexp_ * std::exp(- 5 * z * z) * dt;
 
     positions_[i]   += forces_[i] * dt;
 
@@ -352,6 +352,8 @@ template <class Potential>
 void SystemBD<Potential>::UpdateVerletList()
 {
   number_of_verlet_list_updates_ += 1;
+  std::cout << "update Verlet List\t";
+  std::cout << number_of_verlet_list_updates_ << std::endl;
 
   std::fill(number_of_neighbors_.begin(),
 		    number_of_neighbors_.end(), 0);
